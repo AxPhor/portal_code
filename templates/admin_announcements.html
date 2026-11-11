@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Управление объявлениями</h3>
+  <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
+    <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_home') }}">← Назад в панель</a>
+    <a class="btn btn-sm btn-primary text-nowrap" href="{{ url_for('main.admin_announcement_new') }}">+ Создать объявление</a>
+  </div>
+</div>
+
+<table class="table table-hover bg-white shadow-sm">
+  <thead class="table-light">
+    <tr>
+      <th>Заголовок</th>
+      <th>Текст</th>
+      <th>Действует до</th>
+      <th>Автор</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for ann in announcements %}
+    <tr>
+      <td><strong>{{ ann.title }}</strong></td>
+      <td>{{ ann.content[:50] }}{% if ann.content|length > 50 %}...{% endif %}</td>
+      <td>
+        {% if ann.valid_until %}
+          <span class="text-danger">{{ ann.valid_until }}</span>
+        {% else %}
+          <span class="text-muted">Бессрочно</span>
+        {% endif %}
+      </td>
+      <td>{{ ann.created_by }}</td>
+      <td class="text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.admin_announcement_edit', ann_id=ann.id) }}">Изменить</a>
+        {% if current_role == 'admin' %}
+        <form method="post" action="{{ url_for('main.admin_announcement_delete', ann_id=ann.id) }}" style="display:inline"
+              onsubmit="return confirm('Удалить объявление?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger">Удалить</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="text-center text-muted">Объявлений пока нет.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

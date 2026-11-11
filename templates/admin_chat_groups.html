@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Группы мессенджера</h3>
+  <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_chat_management') }}">← Назад к доступам</a>
+</div>
+<div class="card mb-4 shadow-sm"><div class="card-body">
+    <form method="post" class="d-flex gap-2" style="max-width: 500px;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input name="group_name" class="form-control" placeholder="Название группы" required>
+      <button class="btn btn-primary text-nowrap">Создать</button>
+    </form>
+</div></div>
+<table class="table table-hover bg-white shadow-sm">
+  <thead class="table-light"><tr><th>Название группы</th><th>Участников</th><th>Действия</th></tr></thead>
+  <tbody>
+  {% for g in groups %}
+    <tr><td><strong>{{ g.name }}</strong></td><td>{{ g.members_count }}</td>
+      <td class="text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.admin_chat_group_edit', group_id=g.id) }}">Управление участниками</a>
+        <form method="post" action="{{ url_for('main.admin_chat_group_delete', group_id=g.id) }}" style="display:inline" onsubmit="return confirm('Удалить группу {{g.name}}?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger">Удалить</button>
+        </form>
+      </td></tr>
+  {% else %}
+    <tr><td colspan="3" class="text-center text-muted">Групп пока нет.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

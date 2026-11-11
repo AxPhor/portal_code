@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Управление сотрудниками</h3>
+  <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
+    <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_home') }}">← Назад в панель</a>
+    <a href="{{ url_for('main.admin_departments') }}" class="btn btn-sm btn-outline-secondary text-nowrap">Отделы</a>
+    <a href="{{ url_for('main.export_employees') }}" class="btn btn-sm btn-success text-nowrap">Экспорт в Excel</a>
+    <a href="{{ url_for('main.admin_employee_new') }}" class="btn btn-sm btn-primary text-nowrap">+ Добавить</a>
+    <a href="{{ url_for('main.admin_trash_employees') }}" class="btn btn-sm btn-outline-secondary text-nowrap">Корзина</a>
+  </div>
+</div>
+
+<div class="card mb-4 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title text-primary">Импорт из Excel</h5>
+    <form method="post" action="{{ url_for('main.admin_employees_import') }}" enctype="multipart/form-data" class="d-flex gap-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="file" name="file" accept=".xlsx, .xls" class="form-control" required>
+      <button class="btn btn-success text-nowrap">Загрузить</button>
+    </form>
+  </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-5"><input name="q" value="{{ q }}" class="form-control" placeholder="Поиск..."></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">Найти</button></div>
+  {% if q %}<div class="col-md-2"><a href="{{ url_for('main.admin_employees') }}" class="btn btn-outline-secondary w-100">Сбросить</a></div>{% endif %}
+</form>
+
+<table class="table table-hover bg-white shadow-sm">
+  <thead class="table-light"><tr><th>ФИО</th><th>Должность</th><th>Отдел</th><th>Email</th><th>Телефон</th><th>Действия</th></tr></thead>
+  <tbody>
+  {% for e in emps %}
+    <tr>
+      <td>{{ e.full_name }}</td><td>{{ e.position or '—' }}</td><td>{{ e.dept_name or '—' }}</td><td>{{ e.email or '—' }}</td><td>{{ e.phone or '—' }}</td>
+      <td class="text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.admin_employee_edit', emp_id=e.id) }}">Изменить</a>
+        {% if current_role == 'admin' %}
+        <form method="post" action="{{ url_for('main.admin_employee_delete', emp_id=e.id) }}" style="display:inline" onsubmit="return confirm('В корзину?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger">Удалить</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

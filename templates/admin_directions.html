@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Управление направлениями</h3>
+  <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_documents') }}">← Назад к документам</a>
+</div>
+<div class="card mb-4 shadow-sm"><div class="card-body">
+    <form method="post" class="d-flex gap-2" style="max-width: 500px;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input name="name" class="form-control" placeholder="Название" required>
+      <button class="btn btn-primary text-nowrap">Добавить</button>
+    </form>
+</div></div>
+<table class="table table-hover bg-white shadow-sm">
+  <thead class="table-light"><tr><th>Название</th><th>Документов</th><th>Действия</th></tr></thead>
+  <tbody>
+  {% for d in dirs %}
+    <tr><td>{{ d.name }}</td><td>{{ d.cnt }}</td>
+      <td class="text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.admin_direction_edit', dir_id=d.id) }}">Изменить</a>
+        {% if current_role == 'admin' %}
+          <form method="post" action="{{ url_for('main.admin_direction_delete', dir_id=d.id) }}" style="display:inline" onsubmit="return confirm('Удалить?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-danger" {% if d.cnt %}disabled{% endif %}>Удалить</button>
+          </form>
+        {% endif %}
+      </td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

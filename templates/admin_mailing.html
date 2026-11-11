@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Рассылка по электронной почте</h3>
+  <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_home') }}">← Назад в панель</a>
+</div>
+
+<div id="dropZone" class="card shadow-sm mb-3 border-dashed" style="border: 2px dashed #ccc; background-color: #f8f9fa; transition: all 0.3s; cursor: pointer;">
+  <div class="card-body text-center py-4">
+    <h5 class="text-muted mb-2">📥 Перетащите файлы сюда</h5>
+    <p class="text-muted small mb-0">Или нажмите, чтобы выбрать вручную</p>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post" id="mailingForm" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label">Тема письма *</label>
+        <input name="subject" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Текст письма *</label>
+        <textarea name="body" class="form-control" rows="6" required></textarea>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Прикрепить файлы (необязательно, можно несколько)</label>
+        <input type="file" name="attachments" class="form-control" multiple id="fileInput">
+        <div class="form-text">Можно выбрать сразу несколько документов. Суммарный размер не должен превышать 25 МБ.</div>
+        <div id="fileList" class="mt-2"></div>
+      </div>
+      
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+          <label class="form-label fw-bold mb-0">Выберите получателей:</label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="selectAll">
+              <label class="form-check-label fw-bold text-primary" for="selectAll">Выбрать всех</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="selectManagers">
+              <label class="form-check-label fw-bold text-success" for="selectManagers">Только начальники</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+          {% for e in employees %}
+            <div class="form-check">
+              <input class="form-check-input recipient-checkbox" type="checkbox" name="recipients" value="{{ e.id }}" id="emp_{{ e.id }}">
+              <label class="form-check-label" for="emp_{{ e.id }}">
+                {{ e.full_name }} ({{ e.position }}) — <small class="text-muted">{{ e.email }}</small>
+              </label>
+            </div>
+          {% else %}
+            <div class="text-muted">Нет сотрудников с указанным email.</div>
+          {% endfor %}
+        </div>
+        <div class="form-text">Отметьте нужных сотрудников галочками или нажмите «Выбрать всех».</div>
+        
+        <div class="mt-3">
+            <label class="form-label fw-bold text-primary">Выбранные получатели:</label>
+            <div id="selectedRecipients" class="border rounded p-2 bg-light" style="min-height: 50px; max-height: 200px; overflow-y: auto;">
+                <span class="text-muted small" id="noRecipientsMsg">Пока никто не выбран</span>
+            </div>
+        </div>
+      </div>
+      
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" id="submitBtn">Отправить письма</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_home') }}">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+  <div class="bg-white p-5 rounded shadow text-center">
+    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+    <h4 class="mb-0">Идет отправка писем...</h4>
+    <p class="text-muted mt-2 mb-0">Пожалуйста, не закрывайте страницу. Это может занять несколько секунд.</p>
+  </div>
+</div>
+
+<script>
+document.getElementById('selectAll').addEventListener('change', function() {
+    var checkboxes = document.querySelectorAll('.recipient-checkbox');
+    for (var i = 0; i < checkboxes.length; i++) checkboxes[i].checked = this.checked;
+    if (this.checked) document.getElementById('selectManagers').checked = false;
+    updateSelectedList();
+});
+document.getElementById('selectManagers').addEventListener('change', function() {
+    var checkboxes = document.querySelectorAll('.recipient-checkbox');
+    for (var i = 0; i < checkboxes.length; i++) checkboxes[i].checked = false;
+    if (this.checked) {
+        document.getElementById('selectAll').checked = false;
+        for (var i = 0; i < checkboxes.length; i++) {
+            var labelText = document.querySelector('label[for="' + checkboxes[i].id + '"]').innerText.toLowerCase();
+            if (labelText.includes('начальник') || labelText.includes('директор')) checkboxes[i].checked = true;
+        }
+    }
+    updateSelectedList();
+});
+const recipientCheckboxes = document.querySelectorAll('input[name="recipients"]');
+const selectedContainer = document.getElementById('selectedRecipients');
+function updateSelectedList() {
+    selectedContainer.innerHTML = '';
+    let count = 0;
+    recipientCheckboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            count++;
+            const label = document.querySelector(`label[for="${checkbox.id}"]`);
+            const nameText = label.innerText;
+            const badge = document.createElement('div');
+            badge.className = 'badge bg-primary text-wrap text-start m-1 p-2 d-inline-flex align-items-center';
+            badge.style.fontSize = '0.85rem';
+            badge.innerHTML = `<span>${nameText}</span><button type="button" class="btn-close btn-close-white ms-2" aria-label="Close" style="font-size: 0.6rem;"></button>`;
+            badge.querySelector('button').onclick = function() { checkbox.checked = false; updateSelectedList(); };
+            selectedContainer.appendChild(badge);
+        }
+    });
+    if (count === 0) selectedContainer.innerHTML = '<span class="text-muted small" id="noRecipientsMsg">Пока никто не выбран</span>';
+}
+recipientCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
+
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const fileList = document.getElementById('fileList');
+var allFiles = new DataTransfer();
+function updateFileList() {
+    fileList.innerHTML = ''; 
+    if (allFiles.files.length > 0) {
+        var html = '<strong class="text-success">Выбрано файлов: ' + allFiles.files.length + '</strong><br>';
+        for (var i = 0; i < allFiles.files.length; i++) {
+            html += '<div class="d-flex align-items-center mt-1"><span class="text-success small me-2">📎 ' + allFiles.files[i].name + '</span><button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size: 0.7rem;" onclick="removeFile(' + i + ')">✕</button></div>';
+        }
+        fileList.innerHTML = html; fileInput.files = allFiles.files;
+    } else { fileInput.files = new DataTransfer().files; }
+}
+window.removeFile = function(index) {
+    var newDataTransfer = new DataTransfer();
+    for (var i = 0; i < allFiles.files.length; i++) { if (i !== index) newDataTransfer.items.add(allFiles.files[i]); }
+    allFiles = newDataTransfer; updateFileList();
+};
+fileInput.addEventListener('change', function() {
+    for (var i = 0; i < this.files.length; i++) allFiles.items.add(this.files[i]);
+    updateFileList();
+});
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, preventDefaults, false); document.body.addEventListener(eventName, preventDefaults, false); });
+function preventDefaults (e) { e.preventDefault(); e.stopPropagation(); }
+['dragenter', 'dragover'].forEach(eventName => { dropZone.addEventListener(eventName, () => { dropZone.style.borderColor = '#1e6fd9'; dropZone.style.backgroundColor = '#e6f0ff'; }, false); });
+['dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, () => { dropZone.style.borderColor = '#ccc'; dropZone.style.backgroundColor = '#f8f9fa'; }, false); });
+dropZone.addEventListener('drop', function(e) { var dt = e.dataTransfer; var files = dt.files; for (var i = 0; i < files.length; i++) allFiles.items.add(files[i]); updateFileList(); }, false);
+dropZone.addEventListener('click', function() { fileInput.click(); });
+document.getElementById('mailingForm').addEventListener('submit', function() { document.getElementById('loadingOverlay').style.display = 'flex'; });
+</script>
+{% endblock %}

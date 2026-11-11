@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Сотрудники{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <h3 class="mb-0">👥 Справочник сотрудников</h3>
+  <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
+    <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.portal_home') }}">← На главную</a>
+  </div>
+</div>
+
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-6">
+    <input name="q" value="{{q}}" class="form-control" placeholder="Поиск по ФИО, должности или подразделению">
+  </div>
+  <div class="col-md-2 d-grid">
+    <button class="btn btn-primary">Найти</button>
+  </div>
+</form>
+
+{% if not grouped %}
+  <div class="alert alert-info">Сотрудники не найдены.</div>
+{% endif %}
+
+<div class="accordion" id="accordionDepartments">
+  {% for dept, emps in grouped.items() %}
+    <div class="accordion-item mb-3 border-0 shadow-sm">
+      <h2 class="accordion-header" id="heading_{{ loop.index }}">
+        <button class="accordion-button collapsed text-white fw-bold" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapse_{{ loop.index }}" 
+                aria-expanded="false" 
+                aria-controls="collapse_{{ loop.index }}"
+                style="background-color: #1e6fd9; border-radius: 8px;">
+          🏢 {{ dept }}
+        </button>
+      </h2>
+      <div id="collapse_{{ loop.index }}" 
+           class="accordion-collapse collapse" 
+           aria-labelledby="heading_{{ loop.index }}" 
+           data-bs-parent="#accordionDepartments">
+        <div class="accordion-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 30%;">ФИО</th>
+                  <th style="width: 30%;">Должность</th>
+                  <th style="width: 25%;">Email</th>
+                  <th style="width: 15%;">Телефон</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for e in emps %}
+                <tr>
+                  <td><strong>{{ e.full_name }}</strong></td>
+                  <td>{{ e.position or '—' }}</td>
+                  <td>{% if e.email %}<a href="mailto:{{e.email}}">{{e.email}}</a>{% else %}—{% endif %}</td>
+                  <td>{% if e.phone %}<a href="tel:{{e.phone}}">{{e.phone}}</a>{% else %}—{% endif %}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

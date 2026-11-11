@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h3 class="mb-3">{% if ann %}Редактировать объявление{% else %}Создать объявление{% endif %}</h3>
+    
+    <form method="post" class="bg-white p-4 rounded shadow-sm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label">Заголовок *</label>
+        <input name="title" class="form-control" required value="{{ann.title if ann else ''}}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Текст объявления *</label>
+        <textarea name="content" class="form-control" rows="5" required>{{ann.content if ann else ''}}</textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Действует до (дата и время)</label>
+        <input name="valid_until" type="datetime-local" class="form-control" value="{{ann.valid_until if ann and ann.valid_until else ''}}">
+        <div class="small text-muted mt-1">Если оставить пустым, объявление будет висеть на главной бессрочно.</div>
+      </div>
+      
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_announcements') }}">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

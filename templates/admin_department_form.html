@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h3 class="mb-3">Переименовать отдел</h3>
+    
+    <form method="post" class="bg-white p-4 rounded shadow-sm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label">Текущее название</label>
+        <input type="text" class="form-control" value="{{ dept.name }}" disabled readonly>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Новое название *</label>
+        <input name="name" class="form-control" required value="{{ dept.name }}">
+      </div>
+      
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_departments') }}">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

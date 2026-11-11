@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h3 class="mb-3">{% if emp %}Редактировать сотрудника{% else %}Добавить сотрудника{% endif %}</h3>
+    
+    <form method="post" class="bg-white p-4 rounded shadow-sm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label">ФИО *</label>
+        <input name="full_name" class="form-control" required value="{{emp.full_name if emp else ''}}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Должность</label>
+        <input name="position" class="form-control" value="{{emp.position if emp else ''}}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Подразделение / Отдел</label>
+        <select name="department_id" class="form-select">
+          <option value="">— Без подразделения —</option>
+          {% for d in departments %}
+            <option value="{{d.id}}" {% if emp and emp.department_id==d.id %}selected{% endif %}>{{d.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input name="email" type="email" class="form-control" value="{{emp.email if emp else ''}}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Телефон</label>
+          <input name="phone" class="form-control" value="{{emp.phone if emp else ''}}">
+        </div>
+      </div>
+      
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_employees') }}">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

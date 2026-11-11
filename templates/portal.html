@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-10">
+    
+    <h1 class="mb-5 display-5 fw-bold text-primary text-center">Корпоративный портал</h1>
+    
+    <!-- Блок объявлений -->
+    {% if announcements %}
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card shadow-sm border-0 border-start border-4 border-warning">
+            <div class="card-body">
+              <h4 class="card-title mb-3">📢 Объявления</h4>
+              {% for ann in announcements %}
+                <div class="mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                  <h5 class="mb-1">{{ ann.title }}</h5>
+                  <div class="text-muted small mb-2">
+                    Опубликовано: 
+                    {% if ann.created_at %}
+                        {% set parts = ann.created_at.split(' ') %}
+                        {% if parts|length == 2 %}
+                            {% set date_parts = parts[0].split('-') %}
+                            {% set time_parts = parts[1].split(':') %}
+                            {{ date_parts[2] }}.{{ date_parts[1] }}.{{ date_parts[0] }} {{ time_parts[0] }}:{{ time_parts[1] }}
+                        {% else %}
+                            {{ ann.created_at }}
+                        {% endif %}
+                    {% endif %}
+                    ({{ ann.created_by }})
+                    {% if ann.valid_until %}
+                      | <span class="text-danger">Актуально до: {{ ann.valid_until }}</span>
+                    {% endif %}
+                  </div>
+                  
+                  <!-- Текст объявления (ссылки уже обработаны на сервере) -->
+                  <div class="mb-0" style="white-space: pre-wrap;">{{ ann.content | safe }}</div>
+                  
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Кнопки разделов -->
+    <div class="row justify-content-center g-4 mt-2">
+      <div class="col-md-4">
+        <a href="{{ url_for('main.documents_list') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">📄</div>
+              <h3 class="card-title text-dark">Нормативная документация</h3>
+              <p class="text-muted mb-0">Приказы, распоряжения, инструкции и положения организации</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{{ url_for('main.employees_list') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">👥</div>
+              <h3 class="card-title text-dark">Справочник сотрудников</h3>
+              <p class="text-muted mb-0">Контакты, должности и структура подразделений организации</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Новая кнопка Общение -->
+      <div class="col-md-4">
+        <a href="{{ url_for('chat.chat_home') }}" target="_blank" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">💬</div>
+              <h3 class="card-title text-dark">Общение</h3>
+              <p class="text-muted mb-0">Корпоративный мессенджер для сотрудников</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

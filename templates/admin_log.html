@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Журнал действий</h3>
+<table class="table table-sm bg-white">
+  <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Документ</th><th>Детали</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td>{{r.timestamp}}</td><td>{{r.username}}</td><td>{{r.action}}</td><td>{{r.document_id or ''}}</td><td>{{r.details or ''}}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<a href="{{ url_for('main.admin_documents') }}" class="btn btn-link">← Назад</a>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Типы документов</h3>
+<form method="post" class="d-flex gap-2 mb-3" style="max-width:500px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input name="name" class="form-control" placeholder="Название нового типа" required>
+  <button class="btn btn-primary">Добавить</button>
+</form>
+<table class="table bg-white">
+  <thead><tr><th>Тип</th><th>Документов</th><th></th></tr></thead>
+  <tbody>
+  {% for t in types %}
+    <tr><td>{{t.name}}</td><td>{{t.cnt}}</td>
+      <td>
+        {% if current_role=='admin' %}
+        <form method="post" action="{{ url_for('main.admin_type_delete', type_id=t.id) }}" onsubmit="return confirm('Удалить?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger" {% if t.cnt %}disabled{% endif %}>Удалить</button>
+        </form>
+        {% endif %}
+      </td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<a href="{{ url_for('main.admin_documents') }}" class="btn btn-link">← Назад</a>
+{% endblock %}

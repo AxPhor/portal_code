@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Статистика портала{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="mb-0">📊 Статистика портала</h3>
+  <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_home') }}">← Назад в панель</a>
+</div>
+<div class="row g-4 mb-4">
+    <div class="col-md-3"><div class="card shadow-sm border-0 h-100 bg-primary text-white"><div class="card-body text-center"><h1 class="display-4 fw-bold">{{ total_docs }}</h1><h5 class="card-title">Всего документов</h5><p class="mb-0 small opacity-75">Действует: {{ actual_docs }} | В архиве: {{ archived_docs }}</p></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm border-0 h-100 bg-success text-white"><div class="card-body text-center"><h1 class="display-4 fw-bold">{{ total_employees }}</h1><h5 class="card-title">Сотрудников</h5><p class="mb-0 small opacity-75">В справочнике</p></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm border-0 h-100 bg-warning text-dark"><div class="card-body text-center"><h1 class="display-4 fw-bold">{{ total_messages }}</h1><h5 class="card-title">Сообщений</h5><p class="mb-0 small opacity-75">За последние 24 часа</p></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm border-0 h-100 bg-info text-dark"><div class="card-body text-center"><h1 class="display-4 fw-bold">{{ doc_types|length }}</h1><h5 class="card-title">Типов документов</h5><p class="mb-0 small opacity-75">В системе</p></div></div></div>
+</div>
+<div class="row g-4">
+    <div class="col-md-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-white border-bottom-0 pt-3 pb-0"><h5 class="mb-0">🏆 Топ-5 активных (чат)</h5></div><div class="card-body p-0">
+        {% if top_users %}<ul class="list-group list-group-flush">{% for u in top_users %}<li class="list-group-item d-flex justify-content-between align-items-center">{{ u.full_name }}<span class="badge bg-primary rounded-pill">{{ u.msg_count }} сообщ.</span></li>{% endfor %}</ul>{% else %}<div class="p-4 text-muted text-center">Нет данных.</div>{% endif %}
+    </div></div></div>
+    <div class="col-md-6"><div class="card shadow-sm border-0 h-100"><div class="card-header bg-white border-bottom-0 pt-3 pb-0"><h5 class="mb-0">📄 Документы по типам</h5></div><div class="card-body p-0">
+        <ul class="list-group list-group-flush">{% for t in doc_types %}<li class="list-group-item d-flex justify-content-between align-items-center">{{ t.name }}<span class="badge bg-secondary rounded-pill">{{ t.doc_count }}</span></li>{% endfor %}</ul>
+    </div></div></div>
+</div>
+{% endblock %}

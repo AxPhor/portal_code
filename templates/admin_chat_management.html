@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Управление мессенджером</h3>
+  <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
+    <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_home') }}">← Назад в панель</a>
+    <a class="btn btn-sm btn-primary text-nowrap" href="{{ url_for('main.admin_chat_groups') }}">Управление группами</a>
+  </div>
+</div>
+<div class="row mb-4">
+    <div class="col-md-6"><div class="card shadow-sm border-0 h-100"><div class="card-body">
+        <h5 class="card-title text-primary">⏱️ Настройки хранения</h5>
+        <form method="post" action="{{ url_for('main.admin_chat_settings') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-2 align-items-center">
+                <div class="col-auto"><label class="col-form-label">Сообщения (дней):</label></div>
+                <div class="col-auto"><input type="number" name="keep_messages" class="form-control form-control-sm" value="{{ settings.get('chat_keep_messages_days', '14') }}" min="1" style="width: 80px;"></div>
+                <div class="col-auto"><label class="col-form-label">Файлы (дней):</label></div>
+                <div class="col-auto"><input type="number" name="keep_files" class="form-control form-control-sm" value="{{ settings.get('chat_keep_files_days', '7') }}" min="1" style="width: 80px;"></div>
+                <div class="col-auto"><button class="btn btn-sm btn-primary">Сохранить</button></div>
+            </div>
+        </form>
+    </div></div></div>
+    <div class="col-md-6"><div class="card shadow-sm border-0 h-100 border-danger"><div class="card-body">
+        <h5 class="card-title text-danger">🚨 Экстренная очистка</h5>
+        <form method="post" action="{{ url_for('main.admin_chat_emergency_clear') }}" onsubmit="return confirm('ВНИМАНИЕ! Удалить ВСЕ сообщения и файлы?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-2 align-items-center">
+                <div class="col-auto"><label class="col-form-label">Пароль админа:</label></div>
+                <div class="col-auto"><input type="password" name="password" class="form-control form-control-sm" required placeholder="Введите пароль"></div>
+                <div class="col-auto"><button class="btn btn-sm btn-danger">Удалить всё</button></div>
+            </div>
+        </form>
+    </div></div></div>
+</div>
+<div class="alert alert-info">Здесь вы можете выдавать и отзывать доступ к корпоративному мессенджеру.</div>
+<table class="table table-hover bg-white shadow-sm">
+  <thead class="table-light"><tr><th>ФИО</th><th>Должность</th><th>Доступ</th><th>Действия</th></tr></thead>
+  <tbody>
+  {% for e in employees %}
+    <tr>
+      <td>{{ e.full_name }}</td><td>{{ e.position or '—' }}</td>
+      <td>{% if e.chat_enabled %}<span class="badge bg-success">Включен</span>{% else %}<span class="badge bg-secondary">Отключен</span>{% endif %}</td>
+      <td class="text-nowrap">
+        {% if e.chat_enabled %}
+          <form method="post" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="employee_id" value="{{ e.id }}">
+            <input type="hidden" name="action" value="disable">
+            <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Отключить доступ для {{e.full_name}}?')">Отключить</button>
+          </form>
+          <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#passwordModal" data-emp-id="{{ e.id }}" data-emp-name="{{ e.full_name }}">Сменить пароль</button>
+        {% else %}
+          <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#enableModal" data-emp-id="{{ e.id }}" data-emp-name="{{ e.full_name }}">Включить</button>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="modal fade" id="enableModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="modal-header"><h5 class="modal-title">Включение доступа</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><p>Сотрудник: <strong id="modalEmpName"></strong></p><input type="hidden" name="employee_id" id="modalEmpId"><input type="hidden" name="action" value="enable">
+      <div class="mb-3"><label class="form-label">Придумайте пароль</label><input type="text" name="password" class="form-control" required placeholder="Например: 12345"></div></div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" class="btn btn-primary">Сохранить</button></div>
+</form></div></div></div>
+<div class="modal fade" id="passwordModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="modal-header"><h5 class="modal-title">Смена пароля</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><p>Сотрудник: <strong id="modalEmpNamePass"></strong></p><input type="hidden" name="employee_id" id="modalEmpIdPass"><input type="hidden" name="action" value="change_password">
+      <div class="mb-3"><label class="form-label">Новый пароль</label><input type="text" name="new_password" class="form-control" required placeholder="Например: 12345"></div></div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" class="btn btn-primary">Сохранить</button></div>
+</form></div></div></div>
+<script>
+var enableModal = document.getElementById('enableModal')
+enableModal.addEventListener('show.bs.modal', function (event) {
+  var button = event.relatedTarget; var empId = button.getAttribute('data-emp-id'); var empName = button.getAttribute('data-emp-name');
+  enableModal.querySelector('#modalEmpId').value = empId; enableModal.querySelector('#modalEmpName').textContent = empName;
+})
+var passwordModal = document.getElementById('passwordModal')
+if (passwordModal) {
+    passwordModal.addEventListener('show.bs.modal', function (event) {
+      var button = event.relatedTarget; var empId = button.getAttribute('data-emp-id'); var empName = button.getAttribute('data-emp-name');
+      passwordModal.querySelector('#modalEmpIdPass').value = empId; passwordModal.querySelector('#modalEmpNamePass').textContent = empName;
+    })
+}
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Панель администратора{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-10">
+    <h1 class="mb-5 display-6 fw-bold text-primary text-center">Панель администратора</h1>
+    
+    <div class="row justify-content-center g-4">
+      
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_documents') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">📄</div>
+              <h4 class="card-title text-dark">Управление документами</h4>
+              <p class="text-muted mb-0">Добавление, версии, статусы</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_employees') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">👥</div>
+              <h4 class="card-title text-dark">Управление сотрудниками</h4>
+              <p class="text-muted mb-0">Импорт, экспорт, отделы</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_announcements') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">📢</div>
+              <h4 class="card-title text-dark">Доска объявлений</h4>
+              <p class="text-muted mb-0">Создание и управление новостями</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_mailing') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">📧</div>
+              <h4 class="card-title text-dark">Рассылка сотрудникам</h4>
+              <p class="text-muted mb-0">Отправка писем по базе</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      {% if current_role=='admin' %}
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_stats') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">📊</div>
+              <h4 class="card-title text-dark">Статистика портала</h4>
+              <p class="text-muted mb-0">Документы, сотрудники, активность в чате</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_users') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">🔐</div>
+              <h4 class="card-title text-dark">Управление пользователями</h4>
+              <p class="text-muted mb-0">Доступы, роли и пароли</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_mail_settings') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">✉️</div>
+              <h4 class="card-title text-dark">Настройки почты</h4>
+              <p class="text-muted mb-0">SMTP, логин и пароль для рассылки</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="{{ url_for('main.admin_chat_management') }}" class="text-decoration-none">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">💬</div>
+              <h4 class="card-title text-dark">Управление мессенджером</h4>
+              <p class="text-muted mb-0">Доступы и пароли для чата</p>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <div onclick="startBackup()" class="text-decoration-none" style="cursor: pointer;">
+          <div class="card shadow-sm border-0 h-100 portal-card">
+            <div class="card-body py-5 text-center">
+              <div class="display-1 mb-3">💾</div>
+              <h4 class="card-title text-dark">Скачать резервную копию</h4>
+              <p class="text-muted mb-0">ZIP-архив с базой и документами</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="backupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center py-4">
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <h5 class="mb-2">Создание резервной копии</h5>
+        <p class="text-muted mb-0">Пожалуйста, подождите. Это может занять несколько секунд.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function startBackup() {
+    const modal = new bootstrap.Modal(document.getElementById('backupModal'));
+    modal.show();
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = "{{ url_for('main.admin_backup') }}";
+    document.body.appendChild(iframe);
+    setTimeout(() => {
+        modal.hide();
+        setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 1000);
+    }, 5000);
+}
+</script>
+{% endblock %}

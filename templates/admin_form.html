@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">
+  {% if doc and not is_new_version %}Редактирование документа
+  {% elif is_new_version %}Новая редакция документа
+  {% else %}Новый документ{% endif %}
+</h3>
+
+<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-md-8">
+      <label class="form-label">Наименование *</label>
+      <input name="title" class="form-control" required value="{{doc.title if doc else ''}}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Номер</label>
+      <input name="number" class="form-control" value="{{doc.number if doc else ''}}">
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Тип документа *</label>
+      <select name="doc_type_id" class="form-select" required>
+        {% for t in types %}
+          <option value="{{t.id}}" {% if doc and doc.doc_type_id==t.id %}selected{% endif %}>{{t.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Направление</label>
+      <select name="direction" class="form-select">
+        {% for dir in directions %}
+          <option value="{{ dir.code }}" {% if doc and doc.direction==dir.code %}selected{% endif %}>{{ dir.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Дата</label>
+      <input name="date_signed" type="date" class="form-control" value="{{doc.date_signed if doc and doc.date_signed else ''}}">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Автор / подразделение</label>
+      <input name="author" class="form-control" value="{{doc.author if doc else ''}}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">PDF-файл {% if not doc or is_new_version %}*{% endif %}</label>
+      <input name="file" type="file" accept="application/pdf" class="form-control"
+             {% if not doc or is_new_version %}required{% endif %}>
+      {% if doc and not is_new_version %}<div class="small text-muted">Оставьте пустым, чтобы не менять файл.</div>{% endif %}
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Описание / примечание</label>
+      <textarea name="description" class="form-control" rows="3">{{doc.description if doc else ''}}</textarea>
+    </div>
+
+    {% if doc and not is_new_version %}
+      <div class="col-md-4">
+        <label class="form-label">Статус</label>
+        <select name="status" class="form-select">
+          <option value="actual" {% if doc.status=='actual' %}selected{% endif %}>Действует</option>
+          <option value="archived" {% if doc.status=='archived' %}selected{% endif %}>Не действует</option>
+        </select>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label">Заменён на (если не действует)</label>
+        <select name="replaced_by_id" class="form-select">
+          <option value="">— не указан —</option>
+          {% for a in actual_docs %}
+            <option value="{{a.id}}" {% if doc.replaced_by_id==a.id %}selected{% endif %}>
+              {{a.title}} {% if a.number %}(№ {{a.number}}){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
+    {% if not doc %}
+      <div class="col-md-8">
+        <label class="form-label">Этот документ заменяет (опционально)</label>
+        <select name="replaced_by_id" class="form-select">
+          <option value="">— не заменяет —</option>
+          {% for a in actual_docs %}
+            <option value="{{a.id}}">{{a.title}} {% if a.number %}(№ {{a.number}}){% endif %}</option>
+          {% endfor %}
+        </select>
+        <div class="small text-muted">Если выбрано — тот документ автоматически станет «не действует» со ссылкой на этот.</div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  <div class="mt-4 d-flex gap-2">
+    <button class="btn btn-primary">Сохранить</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_documents') }}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

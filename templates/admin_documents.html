@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Корзина: Документы</h3>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('main.admin_documents') }}" class="btn btn-outline-secondary">← Назад к документам</a>
+    <a href="{{ url_for('main.admin_trash_employees') }}" class="btn btn-outline-secondary">Корзина сотрудников</a>
+  </div>
+</div>
+<div class="alert alert-warning">
+  <strong>Внимание!</strong> Документы, находящиеся здесь, скрыты с сайта. Вы можете восстановить их или удалить навсегда.
+</div>
+<table class="table table-hover bg-white shadow-sm">
+  <thead class="table-light"><tr><th>ID</th><th>Название</th><th>Тип</th><th>Номер</th><th>Дата</th><th>Действия</th></tr></thead>
+  <tbody>
+  {% for d in docs %}
+    <tr>
+      <td>{{d.id}}</td><td>{{d.title}}</td><td>{{d.type_name}}</td><td>{{d.number or '—'}}</td><td>{{d.date_signed or '—'}}</td>
+      <td class="text-nowrap">
+        <form method="post" action="{{ url_for('main.admin_restore_doc_from_trash', doc_id=d.id) }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-success">Восстановить</button>
+        </form>
+        <form method="post" action="{{ url_for('main.admin_delete_doc_forever', doc_id=d.id) }}" style="display:inline" onsubmit="return confirm('ВНИМАНИЕ! Документ будет удален НАВСЕГДА. Вы уверены?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger">Удалить навсегда</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="text-center text-muted">Корзина пуста.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Корзина: Сотрудники</h3>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('main.admin_employees') }}" class="btn btn-outline-secondary">← Назад к сотрудникам</a>
+    <a href="{{ url_for('main.admin_trash_documents') }}" class="btn btn-outline-secondary">Корзина документов</a>
+  </div>
+</div>
+<div class="alert alert-warning">
+  <strong>Внимание!</strong> Удаленные сотрудники не отображаются в справочнике. Вы можете восстановить их или удалить навсегда.
+</div>
+<table class="table table-hover bg-white shadow-sm">
+  <thead class="table-light"><tr><th>ФИО</th><th>Должность</th><th>Подразделение</th><th>Действия</th></tr></thead>
+  <tbody>
+  {% for e in emps %}
+    <tr>
+      <td>{{e.full_name}}</td><td>{{e.position or '—'}}</td><td>{{e.dept_name or '—'}}</td>
+      <td class="text-nowrap">
+        <form method="post" action="{{ url_for('main.admin_restore_emp_from_trash', emp_id=e.id) }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-success">Восстановить</button>
+        </form>
+        <form method="post" action="{{ url_for('main.admin_delete_emp_forever', emp_id=e.id) }}" style="display:inline" onsubmit="return confirm('ВНИМАНИЕ! Сотрудник будет удален НАВСЕГДА. Вы уверены?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger">Удалить навсегда</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4" class="text-center text-muted">Корзина пуста.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

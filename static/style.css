@@ -1,0 +1,63 @@
+body { background: #f4f8fc; }
+
+.corp-nav {
+    background: linear-gradient(90deg, #0b3d91 0%, #1e6fd9 60%, #7fb3e8 100%);
+}
+
+.badge-actual {
+    background: #1aa76b;
+    font-size: 0.95rem;
+    padding: .45em .8em;
+    font-weight: 700;
+}
+.badge-archived {
+    background: #b03030;
+    font-size: 0.95rem;
+    padding: .45em .8em;
+    font-weight: 700;
+}
+
+.card-doc {
+    border-left: 6px solid #1e6fd9;
+    transition: box-shadow .15s;
+}
+.card-doc.archived { border-left-color: #b03030; }
+.card-doc:hover { box-shadow: 0 4px 16px rgba(30,111,217,.15); }
+
+.banner-actual {
+    background: #d8f5e5;
+    border: 2px solid #1aa76b;
+    color: #0d5c39;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+.banner-archived {
+    background: #fde4e4;
+    border: 2px solid #b03030;
+    color: #6b1414;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.dir-infosec { background:#e6f0ff; color:#0b3d91; border-radius:6px; padding:2px 8px; font-size:.8rem; }
+.dir-general { background:#eef2f7; color:#333; border-radius:6px; padding:2px 8px; font-size:.8rem; }
+
+/* Стили для стартовой страницы (Портала) */
+.portal-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 16px;
+    background: #ffffff;
+}
+.portal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(30,111,217,0.2) !important;
+    background: #f8fbff;
+}
+.portal-card .display-1 {
+    font-size: 4rem;
+}
+.portal-card h3 {
+    font-weight: 700;
+}

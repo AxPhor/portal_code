@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{doc.title}}{% endblock %}
+{% block content %}
+<a href="{{ url_for('main.documents_list') }}" class="btn btn-sm btn-link mb-2">← К реестру</a>
+
+{% if doc.status=='actual' %}
+  <div class="banner-actual mb-3">✔ ДОКУМЕНТ ДЕЙСТВУЕТ</div>
+{% else %}
+  <div class="banner-archived mb-3">
+    ✖ ДОКУМЕНТ НЕ ДЕЙСТВУЕТ
+    {% if replaced %}
+      — заменён на: <a href="{{ url_for('main.document', doc_id=replaced.id) }}" class="fw-bold">{{ replaced.title }}</a>
+      {% if replaced.number %}(№ {{replaced.number}}){% endif %}
+    {% endif %}
+  </div>
+{% endif %}
+
+<div class="card">
+  <div class="card-body">
+    <h4>{{ doc.title }}</h4>
+    <table class="table table-sm mt-3">
+      <tr><th style="width:220px">Тип</th><td>{{doc.type_name}}</td></tr>
+      <tr><th>Направление</th><td>
+        {% if doc.direction=='infosec' %}Информационная безопасность{% else %}Общее{% endif %}
+      </td></tr>
+      <tr><th>Номер</th><td>{{doc.number or '—'}}</td></tr>
+      <tr><th>Дата</th><td>{{doc.date_signed or '—'}}</td></tr>
+      <tr><th>Автор / подразделение</th><td>{{doc.author or '—'}}</td></tr>
+      <tr><th>Версия</th><td>{{doc.version}}</td></tr>
+      <tr><th>Загружен</th><td>{{doc.uploaded_at}} ({{doc.uploaded_by}})</td></tr>
+      <tr><th>Описание</th><td>{{doc.description or '—'}}</td></tr>
+    </table>
+
+    {% if previous %}
+      <div class="alert alert-light border mt-3">
+        <strong>Предыдущие редакции этого документа:</strong>
+        <ul class="mb-0 mt-2">
+        {% for p in previous %}
+          <li>
+            Версия {{p.version}} от {{p.uploaded_at}} —
+            <a href="{{ url_for('main.document', doc_id=p.id) }}">{{p.title}}</a>
+            {% if p.number %}(№ {{p.number}}){% endif %}
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="d-flex gap-2 mt-3 align-items-center">
+      <a class="btn btn-primary" href="{{ url_for('main.view_pdf', doc_id=doc.id) }}" target="_blank">Открыть PDF в новой вкладке</a>
+      <a class="btn btn-outline-secondary" href="{{ url_for('main.download', doc_id=doc.id) }}">Скачать PDF</a>
+      <button type="button" class="btn btn-outline-primary" id="copyLinkBtn">🔗 Скопировать ссылку</button>
+    </div>
+
+    <div class="mt-4">
+      <iframe src="{{ url_for('main.view_pdf', doc_id=doc.id) }}"
+              style="width:100%; height:80vh; border:1px solid #ccc; border-radius:8px;"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('copyLinkBtn').addEventListener('click', function() {
+    var url = window.location.href;
+    var btn = document.getElementById('copyLinkBtn');
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(function() {
+            showSuccess(btn);
+        }).catch(function() {
+            fallbackCopy(url, btn);
+        });
+    } else {
+        fallbackCopy(url, btn);
+    }
+});
+
+function fallbackCopy(text, btn) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        var successful = document.execCommand('copy');
+        if (successful) {
+            showSuccess(btn);
+        } else {
+            prompt("Не удалось скопировать автоматически. Скопируйте ссылку вручную:", text);
+        }
+    } catch (err) {
+        prompt("Не удалось скопировать автоматически. Скопируйте ссылку вручную:", text);
+    }
+    document.body.removeChild(textArea);
+}
+
+function showSuccess(btn) {
+    var originalText = btn.innerHTML;
+    btn.innerHTML = '✅ Скопировано!';
+    btn.classList.remove('btn-outline-primary');
+    btn.classList.add('btn-success');
+    
+    setTimeout(function() {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-primary');
+    }, 2000);
+}
+</script>
+{% endblock %}

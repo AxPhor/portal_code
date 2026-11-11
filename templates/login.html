@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card mt-5">
+      <div class="card-body">
+        <h4 class="mb-3">Вход для администратора / редактора</h4>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label">Логин</label>
+            <input name="username" class="form-control" required autofocus>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Пароль</label>
+            <input name="password" type="password" class="form-control" required>
+          </div>
+          <button class="btn btn-primary w-100">Войти</button>
+        </form>
+        <div class="small text-muted mt-3">
+          Читателям вход не нужен — просто откройте главную страницу.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Настройки почты (SMTP)</h3>
+  <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_home') }}">← Назад в панель</a>
+</div>
+<div class="alert alert-info">Здесь настраивается ящик для рассылки.</div>
+<div class="card shadow-sm"><div class="card-body">
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Email (логин)</label><input name="smtp_user" class="form-control" required value="{{ settings.smtp_user or '' }}"></div>
+        <div class="col-md-6"><label class="form-label">Пароль</label><input name="smtp_password" type="password" class="form-control" placeholder="Оставьте пустым"></div>
+        <div class="col-md-4"><label class="form-label">SMTP-сервер</label><input name="smtp_server" class="form-control" required value="{{ settings.smtp_server or 'smtp.yandex.ru' }}"></div>
+        <div class="col-md-2"><label class="form-label">Порт</label><input name="smtp_port" class="form-control" required value="{{ settings.smtp_port or '465' }}"></div>
+        <div class="col-md-6"><label class="form-label">Имя отправителя</label><input name="smtp_sender_name" class="form-control" required value="{{ settings.smtp_sender_name or 'Портал' }}"></div>
+      </div>
+      <div class="mt-4 d-flex gap-2"><button class="btn btn-primary">Сохранить</button><a class="btn btn-outline-secondary" href="{{ url_for('main.admin_home') }}">Отмена</a></div>
+    </form>
+</div></div>
+{% endblock %}

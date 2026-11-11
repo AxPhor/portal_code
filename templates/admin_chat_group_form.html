@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Группа: {{ group.name }}</h3>
+  <a class="btn btn-sm btn-link text-decoration-none text-secondary me-2" href="{{ url_for('main.admin_chat_groups') }}">← Назад к списку групп</a>
+</div>
+<div class="row">
+  <div class="col-md-6"><div class="card shadow-sm h-100"><div class="card-header bg-primary text-white">Участники группы</div>
+    <ul class="list-group list-group-flush">
+      {% for m in members %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{ m.full_name }}
+          <form method="post" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="employee_id" value="{{ m.id }}">
+            <input type="hidden" name="remove_member" value="1">
+            <button class="btn btn-sm btn-outline-danger">Удалить</button>
+          </form>
+        </li>
+      {% else %}<li class="list-group-item text-muted">В группе пока нет участников.</li>{% endfor %}
+    </ul>
+  </div></div>
+  <div class="col-md-6"><div class="card shadow-sm h-100"><div class="card-header bg-success text-white">Добавить сотрудника</div><div class="card-body">
+    <form method="post" class="d-flex gap-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <select name="employee_id" class="form-select" required>
+        <option value="">-- Выберите сотрудника --</option>
+        {% for e in available %}<option value="{{ e.id }}">{{ e.full_name }}</option>{% endfor %}
+      </select>
+      <input type="hidden" name="add_member" value="1">
+      <button class="btn btn-success text-nowrap">Добавить</button>
+    </form>
+  </div></div></div>
+</div>
+{% endblock %}
