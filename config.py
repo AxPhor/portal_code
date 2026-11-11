@@ -6,6 +6,7 @@ SECRET_KEY = "change-me-to-a-long-random-string"
 
 DATABASE = os.path.join(BASE_DIR, "portal.db")
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # <-- Добавлена эта строка
 ALLOWED_EXT = {"pdf"}
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 МБ
 
